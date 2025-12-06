@@ -1,0 +1,16 @@
+---
+alwaysApply: true
+---
+
+# cursor rules for tasklens
+
+- project: "tasklens" – a micro-task verification marketplace using celo payments, convex db, and clerk auth.
+- stack: next.js (app router) + typescript + tailwind + convex + clerk + celo wallet connector (viem/wagmi-like).
+- identity: clerk is the source of truth for users; wallets are *linked* to clerk users (never store private keys, only addresses + verification status).
+- data: all app data (tasks, proofs, reputation, links to clerk ids and wallet addresses) lives in convex; do not introduce another backend/db.
+- blockchain: use celo testnet/mainnet via viem-style clients; keep blockchain logic isolated in `/lib/blockchain` (or similar) and call it from server actions/api routes only.
+- branding: app name is `tasklens`; keep naming consistent across components, copy, and configs. do not reintroduce “payproof” or other old names.
+- code style: prefer small, focused, typed functions; keep typescript strict; avoid `any`; keep react components server-first, client only when needed.
+- auth flow: user signs in with clerk → connects wallet → backend verifies signature → stores `{ chain: "celo", address, verified }` in clerk metadata + convex user record.
+- security: never log secrets or private keys; never hardcode api keys, rpc urls, or private env values; use `process.env` and document required env vars in one place.
+- llm changes: do not change project structure, env variable names, or build tooling without an explicit request; when editing files, modify minimally and preserve existing patterns and comments.
