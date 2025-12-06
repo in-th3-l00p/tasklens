@@ -1,14 +1,13 @@
+import type { CSSProperties, ReactNode } from "react";
+
 import { AppSidebar } from "@/app/(app)/components/app-sidebar";
 import { SiteHeader } from "@/app/(app)/components/site-header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function AppLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <SidebarProvider
@@ -16,7 +15,7 @@ export default function AppLayout({
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
           "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
+        } as CSSProperties
       }
     >
       <AppSidebar variant="inset" />

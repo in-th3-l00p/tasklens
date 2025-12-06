@@ -42,28 +42,33 @@ const data = {
   navMain: [
     {
       title: "Overview",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Task queues",
-      url: "#",
+      title: "Task marketplace",
+      url: "/tasks",
       icon: IconListDetails,
     },
     {
-      title: "Proof streams",
-      url: "#",
+      title: "My work",
+      url: "/tasks/my",
       icon: IconCamera,
     },
     {
-      title: "Payouts",
-      url: "#",
+      title: "Talent network",
+      url: "/talent",
+      icon: IconUsers,
+    },
+    {
+      title: "Messages",
+      url: "/messages",
       icon: IconReport,
     },
     {
-      title: "Reviewers",
-      url: "#",
-      icon: IconUsers,
+      title: "Profile & reputation",
+      url: "/profile",
+      icon: IconFolder,
     },
   ],
   navSecondary: [
@@ -85,17 +90,17 @@ const data = {
   ],
   documents: [
     {
-      name: "Task templates",
-      url: "#",
+      name: "Post a new task",
+      url: "/tasks/new",
       icon: IconFileDescription,
     },
     {
-      name: "Proof guidelines",
+      name: "Task templates",
       url: "#",
       icon: IconFileAi,
     },
     {
-      name: "Payout policies",
+      name: "Payout & reputation guide",
       url: "#",
       icon: IconDatabase,
     },
