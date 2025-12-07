@@ -1,14 +1,23 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { auth } from "@clerk/nextjs/server";
+import { RedirectToSignIn } from "@clerk/nextjs";
+
 import { AppSidebar } from "@/app/(app)/components/app-sidebar";
 import { SiteHeader } from "@/app/(app)/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return <RedirectToSignIn />;
+  }
+
   return (
     <SidebarProvider
       style={
