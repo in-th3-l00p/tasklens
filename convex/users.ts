@@ -179,4 +179,50 @@ export const updateProfile = mutation({
   },
 });
 
+export const listTalent = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      userId: v.id("users"),
+      displayName: v.string(),
+      headline: v.optional(v.string()),
+      focusTags: v.optional(v.array(v.string())),
+      reputation: v.object({
+        rating: v.number(),
+        completedAsContributor: v.number(),
+        completedAsCreator: v.number(),
+      }),
+    }),
+  ),
+  handler: async (ctx) => {
+    const profiles = await ctx.db.query("profiles").collect();
+
+    const enriched = await Promise.all(
+      profiles.map(async (profile) => {
+        const user = await ctx.db.get(profile.userId);
+        if (!user) {
+          return null;
+        }
+
+        return {
+          userId: user._id,
+          displayName: user.displayName,
+          headline: profile.headline,
+          focusTags: profile.focusTags,
+          reputation: {
+            rating: profile.reputation.rating,
+            completedAsContributor: profile.reputation.completedAsContributor,
+            completedAsCreator: profile.reputation.completedAsCreator,
+          },
+        };
+      }),
+    );
+
+    return enriched
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+      .sort((a, b) => b.reputation.rating - a.reputation.rating);
+  },
+});
+
+
 

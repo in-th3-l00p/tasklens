@@ -1,3 +1,6 @@
+import { fetchQuery } from "convex/nextjs";
+
+import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,34 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const sampleTalent = [
-  {
-    id: "u1",
-    name: "Alex Martinez",
-    role: "User researcher · Product strategist",
-    rating: "4.8",
-    completed: 42,
-    focus: ["UX research", "Onboarding", "Fintech"],
-  },
-  {
-    id: "u2",
-    name: "Jamie Lee",
-    role: "Community & growth",
-    rating: "4.6",
-    completed: 35,
-    focus: ["Community", "Content", "Support"],
-  },
-  {
-    id: "u3",
-    name: "Taylor Singh",
-    role: "Technical QA & security",
-    rating: "4.9",
-    completed: 28,
-    focus: ["Testing", "Security", "Web3"],
-  },
-] as const;
+export default async function TalentNetworkPage() {
+  const talent = await fetchQuery(api.users.listTalent, {});
 
-export default function TalentNetworkPage() {
   return (
     <div className="flex flex-col gap-6 py-4 md:py-6">
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 lg:px-6">
@@ -54,42 +32,62 @@ export default function TalentNetworkPage() {
       </div>
 
       <div className="grid gap-4 px-4 lg:grid-cols-3 lg:px-6">
-        {sampleTalent.map((talent) => (
-          <Card key={talent.id}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-sm font-semibold">
-                <span>{talent.name}</span>
-                <Badge variant="outline">{talent.rating}★</Badge>
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                {talent.role}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <p className="text-muted-foreground">
-                {talent.completed} tasks completed on tasklens
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {talent.focus.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-[11px]">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2 pt-1">
-                <Button size="sm" className="flex-1">
-                  View profile
-                </Button>
-                <Button size="sm" variant="outline" className="flex-1">
-                  Start chat
-                </Button>
-              </div>
+        {talent.length === 0 ? (
+          <Card className="col-span-full text-xs">
+            <CardContent className="py-8 text-center text-muted-foreground">
+              No profiles yet. As contributors complete work on tasklens, their
+              profiles and reputation will appear here.
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          talent.map((person) => (
+            <Card key={person.userId}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-sm font-semibold">
+                  <span>{person.displayName}</span>
+                  <Badge variant="outline">
+                    {person.reputation.rating.toFixed(1)}★
+                  </Badge>
+                </CardTitle>
+                {person.headline && (
+                  <CardDescription className="text-xs text-muted-foreground">
+                    {person.headline}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <p className="text-muted-foreground">
+                  {person.reputation.completedAsContributor} tasks completed as
+                  a contributor · {person.reputation.completedAsCreator} as a
+                  client
+                </p>
+                {person.focusTags && person.focusTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {person.focusTags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="text-[11px]"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" className="flex-1">
+                    View profile
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1">
+                    Start chat
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );
 }
-
 
