@@ -1,3 +1,9 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { RedirectToSignIn } from "@clerk/nextjs";
+import { revalidatePath } from "next/cache";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+
+import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,8 +13,75 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export default function ProfilePage() {
+async function updateProfileAction(formData: FormData) {
+  "use server";
+
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
+    return;
+  }
+
+  const headline = (formData.get("headline") as string | null) ?? "";
+  const bio = (formData.get("bio") as string | null) ?? "";
+  const tagsRaw = (formData.get("tags") as string | null) ?? "";
+
+  const focusTags = tagsRaw
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
+  await fetchMutation(api.users.updateProfile, {
+    clerkUserId,
+    headline: headline.trim() || undefined,
+    bio: bio.trim() || undefined,
+    focusTags,
+  });
+
+  revalidatePath("/profile");
+}
+
+export default async function ProfilePage() {
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
+    return <RedirectToSignIn />;
+  }
+
+  const clerkUser = await currentUser();
+
+  await fetchMutation(api.users.ensureUser, {
+    clerkUserId,
+    displayName:
+      clerkUser?.fullName ??
+      clerkUser?.username ??
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+      "Anonymous user",
+    email: clerkUser?.primaryEmailAddress?.emailAddress ?? undefined,
+  });
+
+  const profileData = await fetchQuery(api.users.getProfile, { clerkUserId });
+
+  const displayName =
+    profileData?.displayName ??
+    clerkUser?.fullName ??
+    clerkUser?.username ??
+    "Anonymous user";
+
+  const email =
+    profileData?.email ?? clerkUser?.primaryEmailAddress?.emailAddress;
+
+  const headline = profileData?.headline ?? "";
+  const bio = profileData?.bio ?? "";
+  const tags = profileData?.focusTags ?? [];
+  const reputation = profileData?.reputation ?? {
+    rating: 0,
+    completedAsContributor: 0,
+    completedAsCreator: 0,
+  };
+
   return (
     <div className="flex flex-col gap-6 py-4 md:py-6">
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 lg:px-6">
@@ -21,9 +94,6 @@ export default function ProfilePage() {
             the reputation you&apos;ve earned on tasklens.
           </p>
         </div>
-        <Button size="sm" variant="outline">
-          Edit profile
-        </Button>
       </div>
 
       <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] lg:px-6">
@@ -38,26 +108,56 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
-            <p className="text-sm font-medium text-foreground">Your name</p>
-            <p className="text-muted-foreground">
-              Short bio about how you like to work, the types of problems you
-              enjoy, and past experience that&apos;s relevant here.
-            </p>
-            <div className="space-y-1">
-              <p className="font-medium text-foreground">Links</p>
-              <p className="text-muted-foreground">
-                Add links to your portfolio, GitHub, LinkedIn, or personal site
-                once the profile editor is wired up.
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium text-foreground">Focus areas</p>
-              <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline">UX &amp; research</Badge>
-                <Badge variant="outline">Community</Badge>
-                <Badge variant="outline">Web3</Badge>
+            <p className="text-sm font-medium text-foreground">{displayName}</p>
+            {email && (
+              <p className="text-[11px] text-muted-foreground">{email}</p>
+            )}
+
+            <form className="mt-3 space-y-3" action={updateProfileAction}>
+              <div className="space-y-1">
+                <Label htmlFor="headline" className="text-xs">
+                  Headline
+                </Label>
+                <Input
+                  id="headline"
+                  name="headline"
+                  defaultValue={headline}
+                  placeholder="How do you like to introduce yourself?"
+                />
               </div>
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="bio" className="text-xs">
+                  Bio
+                </Label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  rows={4}
+                  defaultValue={bio}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                  placeholder="Short bio about how you like to work, the types of problems you enjoy, and past experience that&apos;s relevant here."
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="tags" className="text-xs">
+                  Focus areas
+                </Label>
+                <Input
+                  id="tags"
+                  name="tags"
+                  defaultValue={tags.join(", ")}
+                  placeholder="e.g. UX research, community, Web3"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Comma-separated list used for discovery in the talent network.
+                </p>
+              </div>
+              <div className="pt-2">
+                <Button size="sm" type="submit">
+                  Save profile
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
 
@@ -75,20 +175,24 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Overall rating</span>
               <span className="text-sm font-semibold text-foreground">
-                4.7★
+                {reputation.rating.toFixed(1)}★
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">
                 Tasks completed as contributor
               </span>
-              <span className="text-sm font-semibold text-foreground">34</span>
+              <span className="text-sm font-semibold text-foreground">
+                {reputation.completedAsContributor}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">
                 Tasks created as client
               </span>
-              <span className="text-sm font-semibold text-foreground">12</span>
+              <span className="text-sm font-semibold text-foreground">
+                {reputation.completedAsCreator}
+              </span>
             </div>
             <div className="space-y-1 pt-2">
               <p className="font-medium text-foreground">Recent feedback</p>
@@ -103,5 +207,4 @@ export default function ProfilePage() {
     </div>
   );
 }
-
 

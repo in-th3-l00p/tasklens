@@ -92,7 +92,7 @@ export default function NewTaskPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] lg:px-6">
+      <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] lg:items-start lg:px-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">
