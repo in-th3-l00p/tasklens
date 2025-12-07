@@ -144,7 +144,7 @@ export default function MyWorkPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1.8fr)] lg:px-6">
+      <div className="grid gap-4 px-4 lg:grid-cols-2 lg:px-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">
@@ -260,15 +260,6 @@ export default function MyWorkPage() {
                   ))}
                 </TableBody>
               </Table>
-            </div>
-            <div className="flex items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
-              <span>
-                Ready to define your own work? Turn repeat requests into a
-                reusable task.
-              </span>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/tasks/new">Create a task</Link>
-              </Button>
             </div>
           </CardContent>
         </Card>
