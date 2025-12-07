@@ -134,17 +134,9 @@ export default function MyWorkPage() {
             completing for others on tasklens.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link href="/tasks">Browse marketplace</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/tasks/new">Post a new task</Link>
-          </Button>
-        </div>
       </div>
 
-      <div className="grid gap-4 px-4 lg:grid-cols-2 lg:px-6">
+      <div className="grid gap-4 px-4 lg:grid-cols-2 lg:items-start lg:px-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">
@@ -156,6 +148,10 @@ export default function MyWorkPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Button asChild size="sm" className="mb-2">
+              <Link href="/tasks/new">Post a new task</Link>
+            </Button>
+
             <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader className="bg-muted/40">
@@ -221,6 +217,10 @@ export default function MyWorkPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <Button asChild size="sm" variant="outline" className="mb-2">
+              <Link href="/tasks">Browse marketplace</Link>
+            </Button>
+
             <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader className="bg-muted/40">
